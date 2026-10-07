@@ -267,6 +267,12 @@ typedef struct app_api {
     uint64_t (*idivmod)(int32_t n, int32_t d);
     uint64_t (*uidivmod)(uint32_t n, uint32_t d);
 
+    /* ---- device identity (local addition, API level 2) ----
+     * Writes the 12-byte PY32 UID in memory order (UID[0] first). Placed
+     * BEFORE the sysinfo #ifdef so its offset never moves with the preset:
+     * apps are built without ENABLE_FEAT_F4HWN_OVERLAY_INFO. */
+    void (*uid_get)(uint8_t *buf);
+
 #ifdef ENABLE_FEAT_F4HWN_OVERLAY_INFO
     /* ---- API level 2: zero-code Labs system information ---- */
     const char *sys_edition;
@@ -285,11 +291,6 @@ typedef struct app_api {
     uint32_t (*sys_stack_free_now)(void);
     uint32_t (*sys_stack_free_min)(void);
 #endif
-
-    /* ---- device identity (local addition, API level 2) ----
-     * Writes the 12-byte PY32 UID in memory order (UID[0] first). Outside the
-     * sysinfo #ifdef so its offset never moves with the preset. */
-    void (*uid_get)(uint8_t *buf);
 } app_api_t;
 
 #ifdef ENABLE_FEAT_F4HWN_OVERLAY_INFO
