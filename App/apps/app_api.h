@@ -18,8 +18,8 @@
  * Overlay-app ABI (POC).
  *
  * A leaf, modal "overlay app" is a self-contained code blob stored in the
- * external SPI flash and copied into the 4 KiB overlay RAM (the PY25Q16 sector
- * cache) to run, then discarded. It is linked with NOCROSSREFS and must not
+ * external SPI flash and copied into the 8 KiB overlay RAM (the enlarged PY25Q16
+ * sector-cache workspace) to run, then discarded. It is linked with NOCROSSREFS and must not
  * reference resident firmware symbols: every service it needs is reached through
  * this table, which the loader fills and passes to the entry point.
  *
@@ -43,12 +43,16 @@
  *   1  v6.0.0 baseline: every service up to and including beam_draw
  *   2  ticks_ms, rand32, asset_read (+ app_header_t asset_size / asset_crc),
  *      idivmod, uidivmod (the resident division helpers), Labs system info,
- *      current and minimum-since-boot free stack/RAM margin */
+ *      current and minimum-since-boot free stack/RAM margin,
+ *      uid_get (local addition: 12-byte PY32 device identity) */
 #define APP_ABI_MAJOR  1u
 #define APP_API_LEVEL  2u
 
 /* Minimum API level of an app that ships read-only assets (pack_app.py). */
 #define APP_API_ASSETS 2u
+
+/* Local addition: length of the PY32 unique ID returned by uid_get. */
+#define APP_UID_SIZE   12u
 
 /* KEY codes mirrored from driver/keyboard.h (enum KEY_Code_e). Kept in sync by
  * value so the app stays independent of the firmware headers. */
@@ -281,11 +285,16 @@ typedef struct app_api {
     uint32_t (*sys_stack_free_now)(void);
     uint32_t (*sys_stack_free_min)(void);
 #endif
+
+    /* ---- device identity (local addition, API level 2) ----
+     * Writes the 12-byte PY32 UID in memory order (UID[0] first). Outside the
+     * sysinfo #ifdef so its offset never moves with the preset. */
+    void (*uid_get)(uint8_t *buf);
 } app_api_t;
 
 #ifdef ENABLE_FEAT_F4HWN_OVERLAY_INFO
-_Static_assert(sizeof(app_api_t) == 328u,
-               "Labs system information must add exactly 52 API bytes");
+_Static_assert(sizeof(app_api_t) == 332u,
+               "Labs system information must add exactly 52 API bytes + uid_get");
 #endif
 
 /* BK4819 AF modes for set_af (mirror driver/bk4819.h values). */

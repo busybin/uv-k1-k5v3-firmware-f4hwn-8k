@@ -116,7 +116,7 @@ static struct {
     uint8_t shortcut_mask;
     uint8_t shortcut_slots[4];
     uint8_t slot_revision;
-    uint8_t cfg_buf[16];
+    uint8_t cfg_buf[64];
 } app_state;
 
 /* ---- ABI wrappers: the few resident calls that are not a direct signature match ---- */
@@ -401,7 +401,7 @@ static uint32_t app_rx_freq(void)      { return gRxVfo->pRX->Frequency; }
  * only, so an update keeps the app's settings while another app installed in the
  * slot starts from its own defaults. */
 #define APP_CFG_OFFSET  0x40u    /* config area within the header sector */
-#define APP_CFG_OWNER   0x50u    /* name of the app the config belongs to */
+#define APP_CFG_OWNER   0x80u    /* name of the app the config belongs to (room for 64 B config) */
 
 static void app_cfg_load(uint8_t *buf, uint8_t len)
 {
@@ -417,6 +417,14 @@ static void app_cfg_load(uint8_t *buf, uint8_t len)
     else
         memset(buf, 0xFF, len);
 }
+/* API level 2 (local addition): 12-byte PY32 unique ID in memory order. */
+static void app_uid_get(uint8_t *buf)
+{
+    const uint8_t *uid = (const uint8_t *)UID_BASE;
+    for (uint8_t i = 0; i < APP_UID_SIZE; i++)
+        buf[i] = uid[i];
+}
+
 static void app_cfg_save(const uint8_t *buf, uint8_t len)
 {
     if (len > sizeof(app_state.cfg_buf)) len = sizeof(app_state.cfg_buf);
@@ -756,6 +764,7 @@ static const app_api_t app_api = {
     .sys_stack_free_now  = STACK_FreeNow,
     .sys_stack_free_min  = STACK_FreeMinimum,
 #endif
+    .uid_get          = app_uid_get,
 };
 
 uint8_t APP_LaunchOverlay(uint8_t slot)

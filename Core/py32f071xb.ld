@@ -58,7 +58,12 @@ _estack = ORIGIN(RAM) + LENGTH(RAM);    /* end of RAM */
 /* ENABLE_NO_HEAP passes --defsym=__min_heap_size=0 to drop the reserved heap
  * (no malloc/sbrk is linked); default stays 0x200 otherwise. */
 _Min_Heap_Size = DEFINED(__min_heap_size) ? __min_heap_size : 0x200;      /* required amount of heap  */
-_Min_Stack_Size = 0x400; /* required amount of stack */
+/* Local 8K-overlay change: 0x400 -> 0x2C0 (704 B). The 8 KiB app workspace
+ * leaves ~720 B of real stack (0x4000 - bss_end); this reserve only gates the
+ * link, so it is set just under reality. If .bss grows past it the link fails
+ * loudly instead of silently eating stack. Verify on-device with the API
+ * level 2 sys_stack_free_min watermark after flashing. */
+_Min_Stack_Size = 0x2C0; /* required amount of stack */
 
 /* Specify the memory areas */
 MEMORY
@@ -204,7 +209,7 @@ SECTIONS
 
   ASSERT(__mb_ramfunc_size <= __mb_workspace_size,
          "Multiboot RAM stub does not fit in PY25Q16 sector-cache overlay")
-  ASSERT((__mb_ramfunc_size == 0) || (__mb_workspace_size == 0x1000),
+  ASSERT((__mb_ramfunc_size == 0) || (__mb_workspace_size == 0x2000),
          "Multiboot overlay workspace is not the 4 KiB sector cache")
   ASSERT((__mb_ramfunc_size == 0) ||
          (ADDR(.mb_ramfunc) == ADDR(.mb_workspace)),

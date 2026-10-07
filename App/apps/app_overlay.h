@@ -34,19 +34,19 @@
  * External-flash "Apps" region (carved from the free space in the PY25Q16 map,
  * after the multiboot markers, before the RX/TX log):
  *
- *   0x102000  slot 0   ]  16 slots x 8 KiB = 128 KiB
- *   0x104000  slot 1   ]  each slot: 4 KiB header sector + 4 KiB code
+ *   0x102000  slot 0   ]  16 slots x 12 KiB = 192 KiB
+ *   0x105000  slot 1   ]  each slot: 4 KiB header sector + 8 KiB code
  *     ...              ]
- *   0x120000  slot 15  ]
+ *   0x12F000  slot 15  ]  (region ends 0x132000; RXTX log at 0x1E0000)
  *
  * Header sector layout (slot-relative):
  *
  *   0x000  app_header_t (64 B)
- *   0x040  per-app config staged by cfg_save (16 B)
- *   0x050  name of the app that config belongs to (16 B, reserved up to 0x0FF);
+ *   0x040  per-app config staged by cfg_save (64 B, local enlargement)
+ *   0x080  name of the app that config belongs to (16 B, reserved up to 0x0FF);
  *          kept with the config when the slot is erased for an update
  *   0x100  read-only assets (API level 2, up to 3840 B, CRC-checked at launch)
- *   0x1000 code (<= 4 KiB, copied into the overlay RAM)
+ *   0x1000 code (<= 8 KiB, copied into the overlay RAM)
  *
  * Host tooling (APP_SlotErase/Write/Info) touches the external flash only and is
  * never brick-critical; a bad slot is simply refused at launch by the CRC check.
@@ -61,7 +61,7 @@
 
 /* ---- external-flash Apps region ---- */
 #define APP_REGION_BASE   0x00102000u   /* first app slot                        */
-#define APP_SLOT_STRIDE   0x00002000u   /* 8 KiB per slot                        */
+#define APP_SLOT_STRIDE   0x00003000u   /* 12 KiB per slot: 4K header + 8K code   */
 #define APP_CODE_OFFSET   0x00001000u   /* code starts after the 4 KiB header sector */
 #define APP_SECTOR_SIZE   0x00001000u   /* external NOR erase granularity        */
 #define APP_SLOT_COUNT    16u
@@ -70,7 +70,7 @@
 /* ---- overlay RAM budget: the PY25Q16 4 KiB sector cache reused as workspace.
  * The link VMA itself is pinned in Core/py32f071xb.ld (ORIGIN+0x280) and passed
  * via compile-app.sh; the loader checks each blob's link_vma against it. ---- */
-#define APP_OVERLAY_MAX   0x00001000u   /* 4 KiB                                 */
+#define APP_OVERLAY_MAX   0x00002000u   /* 8 KiB                                 */
 
 /* ---- read-only assets, served by api->asset_read (API level 2) ----
  * Literal values so pack_app.py can parse them; checked against the slot

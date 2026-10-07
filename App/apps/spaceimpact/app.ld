@@ -1,6 +1,6 @@
 /* Overlay app linked into the 4 KiB PY25Q16 sector-cache workspace. */
 APP_VMA    = DEFINED(APP_VMA) ? APP_VMA : 0x20000280;
-APP_LENGTH = 0x1000;
+APP_LENGTH = 0x2000;
 
 ENTRY(app_main)
 

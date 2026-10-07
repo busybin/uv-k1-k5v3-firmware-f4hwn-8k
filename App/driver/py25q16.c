@@ -47,7 +47,8 @@ static uint32_t SectorCacheAddr = 0x1000000;
 /* The restore-only RAM stub is copied over this cache immediately before it
  * erases internal flash. A reset always follows, so the cache is never needed
  * again after the overlay becomes active. */
-static uint8_t SectorCache[SECTOR_SIZE]
+#define OVERLAY_SIZE 0x2000
+static uint8_t SectorCache[OVERLAY_SIZE]
     __attribute__((section(".bss.mb_workspace"), aligned(4), used));
 #else
 static uint8_t SectorCache[SECTOR_SIZE];

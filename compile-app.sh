@@ -18,7 +18,7 @@ set -euo pipefail
 IMAGE=uvk1-uvk5v3
 APPS_DIR=App/apps
 OUT_DIR=build/Apps
-OVERLAY_MAX=4096
+OVERLAY_MAX=8192
 APP_VMA=${APP_VMA:-0x20000280}      # pinned overlay VMA (Core/py32f071xb.ld)
 
 cd "$(dirname "$0")"

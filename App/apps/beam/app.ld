@@ -1,6 +1,6 @@
 /* Overlay-app link script. */
 APP_VMA    = DEFINED(APP_VMA) ? APP_VMA : 0x20000280;
-APP_LENGTH = 0x1000;
+APP_LENGTH = 0x2000;
 
 ENTRY(app_main)
 
