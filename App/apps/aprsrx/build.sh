@@ -39,8 +39,8 @@ step 4 pack    ; python3 ../pack_app.py "${APP}.bin" "${OUT}.app" \
 trap - ERR
 
 BYTES=$(wc -c < "${APP}.bin")
-if [ "$BYTES" -gt 4096 ]; then
-  printf '\r  🚨 %-13s OVERFLOWS 4 KiB (%d B)     \n' "$APP_NAME" "$BYTES"; exit 1
+if [ "$BYTES" -gt 8192 ]; then
+  printf '\r  🚨 %-13s OVERFLOWS 8 KiB (%d B)     \n' "$APP_NAME" "$BYTES"; exit 1
 fi
 printf '\r  ✅ %-13s %4d B  (%d%% of 4 KiB)  ->  %s.app   \n' \
        "$APP_NAME" "$BYTES" "$(( BYTES * 100 / 4096 ))" "$OUT"

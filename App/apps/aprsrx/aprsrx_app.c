@@ -736,8 +736,12 @@ static void house(void){
 __attribute__((noinline))
 static void listen(void){
     const app_api_t *A=g.A;
-    dem_t d;
-    sl_t sl[NSL];
+    /* Local 8K-stack fix: the demod state (~1.2 KiB: cosine tables + filter
+     * memory) lived on the stack. It is fully reloaded from assets below and
+     * single-threaded: .bss is behavior-identical. */
+    static dem_t d;
+    /* Local 8K-stack fix (cont.): 3 slicers x FRAME_MAX live here too. */
+    static sl_t sl[NSL];
     memset(sl,0,sizeof sl);
     A->asset_read(DEMOD_INIT,&d,sizeof d);  /* initial state, then both cosine tables */
     sl[0].wa=2; sl[0].wb=3;      /* favours space */
@@ -771,7 +775,9 @@ static void listen(void){
 
 __attribute__((section(".text.entry"),used))
 void app_main(const app_api_t *api){
-    frame_t frames[HISTORY];    /* on the stack: the 4 KiB overlay also holds .bss */
+    /* Local 8K-stack fix: the 5-frame history (~1.2 KiB) lived on the stack
+     * (1768 B frame). Written before read by the decoder; .bss is identical. */
+    static frame_t frames[HISTORY];
     frame_t *history[HISTORY];
     for(unsigned k=0;k<HISTORY;k++) history[k]=&frames[k];
     char text[34];

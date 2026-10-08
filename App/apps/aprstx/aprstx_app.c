@@ -355,8 +355,9 @@ static void fieldRow(const char *label,const char *val,uint8_t x,uint8_t line,bo
 /* ---- display ---- */
 static void draw(void){
     /* The UI texts live in the assets: one read per frame into this word-aligned
-     * stack block (gen_assets.py keeps every offset aligned). */
-    char s[UI_SIZE] __attribute__((aligned(4)));
+     * block (gen_assets.py keeps every offset aligned).
+     * Local 8K-stack fix: was stack (280 B frame); single-threaded .bss is identical. */
+    static char s[UI_SIZE] __attribute__((aligned(4)));
     const app_api_t *A=g.A;
     char *o;
     A->asset_read(0,s,UI_SIZE);
