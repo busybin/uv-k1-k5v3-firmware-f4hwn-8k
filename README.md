@@ -8,6 +8,9 @@
 > overlay Apps (an encrypted messenger with a 43-message history, a CW transceiver with a
 > 131-message history) run on the Quansheng UV-K1 / UV-K5 V3 (PY32F071).
 
+![F4HWN 8K firmware — main screen](screenshots/firmware-main.png)
+![F4HWN APPS menu, opened with F+7](screenshots/firmware-apps.png)
+
 ## What changed vs upstream v6.1.0
 
 | # | Change | Where |
