@@ -75,3 +75,26 @@ and attribution notices, and NOTICE files.
 Attribution in this file does not imply endorsement by Dual Tachyon,
 OneOfEleven, fagci, Egzumer, muzkr, Armel / F4HWN or any other
 contributor.
+
+Modifications by this 8K overlay fork
+-------------------------------------
+
+This repository is a fork of armel/uv-k1-k5v3-firmware-custom at upstream
+tag v6.1.0 (commit f556a96), distributed under the Apache License 2.0.
+As required by Apache-2.0 section 4, the modifications made by this fork
+are:
+
+  1. The overlay App execution window was enlarged from 4 KiB to 8 KiB
+     (0x1000 -> 0x2000) and the App slot stride from 0x2000 to 0x3000,
+     with the minimum stack reserve reduced to 704 B so the firmware
+     still fits the 16 KiB of RAM;
+  2. API level 2 uid_get() was added ahead of the Labs-only system
+     information block so that its struct offset (276) is preset
+     independent, and the per-slot configuration buffer was enlarged
+     from 16 to 64 bytes;
+  3. The displayed version string defaults to "v6.1.0+8K".
+
+All other content is unmodified from the upstream release stated above.
+
+This fork is published in the spirit of the upstream authors' request to
+forking developers: keep forks open source.
