@@ -63,6 +63,12 @@ cmake --build build -j
 | [`busybin/F4HWN-CW-Morse-App`](https://github.com/busybin/F4HWN-CW-Morse-App) | CW (Morse) transceiver overlay app, 131-message history |
 | [`busybin/F4HWN-Encrypted-Messenger-App`](https://github.com/busybin/F4HWN-Encrypted-Messenger-App) | Encrypted messenger overlay app, 43-message history, Speck128 |
 
+Both Apps (and the official overlay apps) can be installed without downloading anything from
+the one-page flasher,
+**[busybin.github.io/uvstudio-8k-flasher](https://busybin.github.io/uvstudio-8k-flasher/)**
+— a fork of armel's UV Studio whose catalogs read this repository's `archive/`; its firmware
+dropdown offers exactly this 8K build.
+
 ---
 
 <details>
