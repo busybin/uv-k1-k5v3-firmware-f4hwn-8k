@@ -48,8 +48,8 @@ if(ENABLE_FEAT_F4HWN)
     endif()
     if(NOT VERSION_STRING_2)
         # 8K overlay fork: keep the upstream base version visible and mark our change.
-        # Upstream default was "v4.2"; this fork tracks upstream v6.1.0 and adds "+8K".
-        set(VERSION_STRING_2 "v6.1.0+8K")
+        # Upstream default was "v4.2"; this fork tracks upstream v6.2.0 and adds "+8K".
+        set(VERSION_STRING_2 "v6.2.0+8K")
     endif()
     if(NOT EDITION_STRING)
         set(EDITION_STRING "Custom")

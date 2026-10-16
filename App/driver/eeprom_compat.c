@@ -82,7 +82,7 @@ static const AddrMapping_t ADDR_MAPPINGS[] = {
     // Not mapped, for documentation only (the EEPROM API uses 16-bit
     // addresses and could not reach a 32 KB window anyway):
     //
-    // 0x1E0000 -> 0x1E8000: RX/TX append-only log * 32 KB / 8 sectors
+    // 0x018000 -> 0x020000: RX/TX append-only log * 32 KB / 8 sectors
     //                       (ENABLE_FEAT_F4HWN_RXTX_LOG, accessed directly
     //                       by app/rxtx_log.c, not through this layer)
 };

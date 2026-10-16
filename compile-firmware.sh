@@ -12,6 +12,7 @@ set -euo pipefail
 #   ./compile-firmware.sh Fusion -DDEV=ON
 #   ./compile-firmware.sh FieldOps -DENABLE_VOX=OFF
 #   ./compile-firmware.sh All
+#   ./compile-firmware.sh all
 # Default preset: "Fusion"
 # ---------------------------------------------
 
@@ -22,6 +23,11 @@ RAM_LIMIT=$((16 * 1024))
 
 PRESET=${1:-Fusion}
 shift || true  # remove preset from arguments if present
+
+# Match compile-app.sh: accept either capitalization for the aggregate target.
+if [[ "$PRESET" == [Aa][Ll][Ll] ]]; then
+  PRESET=All
+fi
 
 # Any remaining args will be treated as CMake cache variables
 EXTRA_ARGS=("$@")

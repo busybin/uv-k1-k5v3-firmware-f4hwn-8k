@@ -294,7 +294,7 @@ typedef struct app_api {
 } app_api_t;
 
 #ifdef ENABLE_FEAT_F4HWN_OVERLAY_INFO
-_Static_assert(sizeof(app_api_t) == 332u,
+_Static_assert(sizeof(app_api_t) == 340u,
                "Labs system information must add exactly 52 API bytes + uid_get");
 #endif
 
