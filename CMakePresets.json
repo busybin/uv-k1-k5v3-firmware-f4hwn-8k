@@ -196,6 +196,7 @@
                 "ENABLE_FEAT_F4HWN_OVERLAY_INFO": true,
                 "ENABLE_FEAT_F4HWN_EXT_FLASH_RW": true,
                 "EDITION_STRING": "Labs",
+                "VERSION_STRING_2": "v6.2.0+8K",
                 "TARGET": "f4hwn.labs"
             }
         },

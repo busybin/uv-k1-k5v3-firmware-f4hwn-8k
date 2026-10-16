@@ -127,8 +127,14 @@ static struct {
     bool shortcuts_cached;
     uint8_t shortcut_slots[APP_SHORTCUT_COUNT];   /* per position, 0xFF = none */
     uint8_t slot_revision;
-    uint8_t cfg_buf[APP_CONFIG_PROXY_MAX];
 } app_state;
+
+/* Staged per-app config (local cfg_save, or the config-proxy target block).
+ * Local 8K-fork addition: it lives in .pre_anchor - the RAM gap between the USB
+ * state and the pinned overlay anchor (Core/py32f071xb.ld) - instead of .bss, so
+ * upstream's 117-byte block costs none of the 8K fork's stack budget. */
+static uint8_t cfg_buf[APP_CONFIG_PROXY_MAX]
+    __attribute__((section(".pre_anchor"), aligned(4)));
 
 /* ---- ABI wrappers: the few resident calls that are not a direct signature match ---- */
 
@@ -462,7 +468,7 @@ static void app_cfg_save(const uint8_t *buf, uint8_t len)
     } else if (len > APP_CONFIG_LOCAL_MAX) {
         len = APP_CONFIG_LOCAL_MAX;
     }
-    memcpy(app_state.cfg_buf, buf, len);
+    memcpy(cfg_buf, buf, len);
     app_state.cfg_len = len;   /* mark dirty; the loader commits after the app returns */
 }
 
@@ -1017,10 +1023,10 @@ uint8_t APP_LaunchOverlay(uint8_t slot)
                 if (magic == app_state.cfg_target_magic) {
                     PY25Q16_ReadBuffer(base + APP_ASSET_OFFSET, ws, target.asset_size);
                     memcpy(ws + app_state.cfg_target_offset,
-                           app_state.cfg_buf, app_state.cfg_len);
+                           cfg_buf, app_state.cfg_len);
                     const uint16_t crc = (uint16_t)MB_Crc32Bytes(ws, target.asset_size);
                     PY25Q16_WriteBuffer(base + APP_ASSET_OFFSET + app_state.cfg_target_offset,
-                                       app_state.cfg_buf, app_state.cfg_len, false);
+                                       cfg_buf, app_state.cfg_len, false);
                     PY25Q16_WriteBuffer(base + offsetof(app_header_t, asset_crc),
                                        &crc, sizeof(crc), false);
                 }
@@ -1028,7 +1034,7 @@ uint8_t APP_LaunchOverlay(uint8_t slot)
         } else if (!app_state.cfg_proxy) {
             const uint32_t base = APP_SLOT_BASE(slot);
             PY25Q16_WriteBuffer(base + APP_CFG_OFFSET,
-                               app_state.cfg_buf, app_state.cfg_len, false);
+                               cfg_buf, app_state.cfg_len, false);
             PY25Q16_WriteBuffer(base + APP_CFG_OWNER, h.name, APP_NAME_LEN, false);
         }
         PY25Q16_InvalidateCache();

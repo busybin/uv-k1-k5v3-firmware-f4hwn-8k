@@ -8,12 +8,13 @@
  * existing cfg_load/cfg_save callbacks to edit one bounded asset block owned
  * by another installed app.  Writes remain deferred until the editor exits. */
 #define APP_CONFIG_PROXY_MAGIC 0x31505843u /* "CXP1" */
-/* Local 8K-fork change: upstream 117 / 16 -> 64 / 64. The loader stages at most
- * one config block in RAM (cfg_buf[APP_CONFIG_PROXY_MAX]); our SECMSG app needs
- * 49 B of per-app config (upstream's 16 B local maximum cannot hold it) while the
- * 8K overlay leaves no RAM for upstream's 117 B. 64 B also keeps the on-flash
- * layout identical to the previous 8K builds: config at 0x40, owner tag at 0x80. */
-#define APP_CONFIG_PROXY_MAX   64u
+/* Local 8K-fork change: upstream 117 / 16 -> 117 / 64. The proxy maximum stays
+ * upstream's 117 (APRS Edit edits a 117-byte APRS TX profile), but its staging
+ * buffer lives in the .pre_anchor RAM gap so it costs no .bss; the local maximum
+ * is raised to 64 B because our SECMSG app needs 49 B of per-app config. 64 B
+ * also keeps the on-flash layout identical to the previous 8K builds: config at
+ * 0x40, owner tag at 0x80. */
+#define APP_CONFIG_PROXY_MAX   117u
 #define APP_CONFIG_LOCAL_MAX   64u
 
 typedef struct {

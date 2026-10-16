@@ -58,12 +58,12 @@ _estack = ORIGIN(RAM) + LENGTH(RAM);    /* end of RAM */
 /* ENABLE_NO_HEAP passes --defsym=__min_heap_size=0 to drop the reserved heap
  * (no malloc/sbrk is linked); default stays 0x200 otherwise. */
 _Min_Heap_Size = DEFINED(__min_heap_size) ? __min_heap_size : 0x200;      /* required amount of heap  */
-/* Local 8K-overlay change: 0x400 -> 0x2A0 (672 B). The 8 KiB app workspace
- * (upstream v6.2.0 + 8 K) leaves ~693 B of real stack (0x4000 - bss_end); this
- * reserve only gates the link, so it is set just under reality. If .bss grows
- * past it the link fails loudly instead of silently eating stack. Verify
- * on-device with the API level 2 sys_stack_free_min watermark after flashing. */
-_Min_Stack_Size = 0x2A0; /* required amount of stack */
+/* Local 8K-overlay change: 0x400 -> 0x300 (768 B) = the real stack the 8 KiB app
+ * workspace leaves (0x4000 - bss_end) on v6.2.0+8K. The reserve only gates the
+ * link, so it is set exactly at reality: if .bss grows past it the link fails
+ * loudly instead of silently eating stack. Verify on-device with the API
+ * level 2 sys_stack_free_min watermark after flashing. */
+_Min_Stack_Size = 0x300; /* required amount of stack */
 
 /* Specify the memory areas */
 MEMORY
@@ -167,6 +167,23 @@ SECTIONS
     *(.noncacheable*)
     . = ALIGN(4);
   } >RAM
+
+  /* Local 8K-fork addition: the overlay loader stages at most one app config
+     block in RAM (app_overlay.c cfg_buf, APP_CONFIG_PROXY_MAX bytes). On the
+     8 KiB fork the .bss after the workspace has no room left for it, so it goes
+     into the gap between the USB state and the pinned overlay anchor
+     (0x84..0x280): that RAM is already reserved by the anchor, so filling it
+     costs nothing. Zero-initialized and covered by the startup .bss loop
+     (_sbss is taken in .noncacheable, _ebss at the end of .bss). */
+  .pre_anchor (NOLOAD) :
+  {
+    . = ALIGN(4);
+    KEEP(*(.pre_anchor))
+    . = ALIGN(4);
+  } >RAM
+  ASSERT(SIZEOF(.pre_anchor) == 0 ||
+         (ADDR(.pre_anchor) + SIZEOF(.pre_anchor)) <= (ORIGIN(RAM) + 0x280),
+         "pre-anchor RAM does not fit before the pinned overlay anchor - trim APP_CONFIG_PROXY_MAX")
 
   /* Optional multiboot overlay. The restore stub is linked at the same RAM
      address as the 4 KiB PY25Q16 sector cache, but its load image remains in

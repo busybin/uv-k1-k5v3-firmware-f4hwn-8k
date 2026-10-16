@@ -294,7 +294,10 @@ typedef struct app_api {
 } app_api_t;
 
 #ifdef ENABLE_FEAT_F4HWN_OVERLAY_INFO
-_Static_assert(sizeof(app_api_t) == 340u,
+/* Local addition: uid_get is appended before the sysinfo #ifdef, so the struct
+ * is 4 bytes larger than upstream (4-byte function pointer, not a 12-byte
+ * field: APP_UID_SIZE is the caller's buffer length). */
+_Static_assert(sizeof(app_api_t) == 332u,
                "Labs system information must add exactly 52 API bytes + uid_get");
 #endif
 
