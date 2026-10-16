@@ -1,7 +1,7 @@
-# 8K Overlay Fork — F4HWN v6.1.0+8K
+# 8K Overlay Fork — F4HWN v6.2.0+8K
 
 > **This repository is a fork of [armel/uv-k1-k5v3-firmware-custom](https://github.com/armel/uv-k1-k5v3-firmware-custom)**
-> at upstream tag [`v6.1.0`](https://github.com/armel/uv-k1-k5v3-firmware-custom/tree/f556a96)
+> at upstream tag [`v6.2.0`](https://github.com/armel/uv-k1-k5v3-firmware-custom/tree/0ade03c0)
 > (Apache-2.0 — © DualTachyon / Egzumer / Armel-F4HWN / muzkr, see [NOTICE](NOTICE)).
 >
 > It exists for one purpose: **double the overlay App window from 4 KiB to 8 KiB**, so that larger
@@ -11,41 +11,50 @@
 ![F4HWN 8K firmware — main screen](screenshots/firmware-main.png)
 ![F4HWN APPS menu, opened with F+7](screenshots/firmware-apps.png)
 
-## What changed vs upstream v6.1.0
+## What changed vs upstream v6.2.0
 
 | # | Change | Where |
 | --- | --- | --- |
 | 1 | Overlay App window `0x1000` → **`0x2000`** (App code+bss ≤ 8192 B) | `App/apps/app_overlay.h`, `App/driver/py25q16.c`, `Core/py32f071xb.ld`, all `App/apps/*/app.ld`, `compile-app.sh` |
-| 2 | App slot stride `0x2000` → **`0x3000`** (8 K code + 4 K header = exactly one slot) | `App/apps/app_overlay.h` |
-| 3 | Min stack `0x400` → `0x2C0` (704 B) — RAM is 100 % full with the 8 K window | `Core/py32f071xb.ld` |
+| 2 | App slot stride `0x2000` → **`0x3000`** (8 K code + 4 K header = exactly one slot); 48 slots, `0x102000`–`0x192000` | `App/apps/app_overlay.h` |
+| 3 | Min stack `0x400` → **`0x300`** (768 B, = the real stack the 8 K window leaves); RAM is 100 % full | `Core/py32f071xb.ld` |
 | 4 | API level 2 `uid_get()` placed **before** the Labs-only sysinfo block, so its struct offset (276) is preset-independent | `App/apps/app_api.h`, `App/apps/app_overlay.c` |
-| 5 | Per-slot config buffer 16 → 64 B (owner tag `0x50` → `0x80`) | `App/apps/app_overlay.c` |
-| 6 | Displayed version string marked **`v6.1.0+8K`** (CMake default) | `CMakeLists.txt` |
+| 5 | Per-slot local config 16 → **64 B** (owner tag `0x50` → `0x80`; on-flash layout identical to our previous 8K builds) | `App/apps/app_config_proxy.h`, `App/apps/app_overlay.c` |
+| 6 | Upstream's 117-byte config-proxy staging buffer kept, but moved into a new `.pre_anchor` section — the RAM gap between the USB state and the pinned overlay anchor, so it costs no `.bss` | `Core/py32f071xb.ld`, `App/apps/app_overlay.c` |
+| 7 | Displayed version string marked **`v6.2.0+8K`** (Labs preset) | `CMakePresets.json`, `CMakeLists.txt` |
+| 8 | Official APRS RX / TX re-built with the **stack frames moved to `.bss`** (the 8K firmware's smaller stack) and 8K build gates | `App/apps/aprsrx/*`, `App/apps/aprstx/*` |
 
 Nothing else is touched: the stock Labs UI, menus, key maps and RF behaviour are identical to
-upstream. The full diff is the short commit list on branch **`v610-8k`**.
+upstream. The full diff is the short commit list on branch **`v620-8k`**.
 
 ## Release asset
 
-`f4hwn.labs.8k-overlay.bin` — 115016 B,
-SHA256 `717f40e6623be8f4706494bc2f8a279b9f6229c34248460456736c32a515980a`,
-on-radio version display **F4HWN v6.1.0+8K**, edition Labs.
+`archive/f4hwn.labs.8k.v6.2.0.bin` — 115948 B,
+SHA256 `7f9b1e6ec2df2a4b275b18a80bd0f2651fe1145c083b6f26f78b78a3b198afb1`,
+on-radio version display **F4HWN v6.2.0+8K**, edition Labs.
+(The previous 8K build, `archive/f4hwn.labs.8k.v6.1.0.bin`, stays in the archive for rollback.)
 
 ## ⚠️ Before you flash
 
-1. **The App slot stride changed** (`0x2000` → `0x3000`). After flashing this firmware,
-   **every overlay App must be re-installed** — previously installed slots now sit at the
-   wrong addresses and will not launch.
-2. **8K-built Apps do NOT run on the stock 4K firmware**: their `.bss` overruns the stock
+1. **Coming from our previous 8K build (`v6.1.0+8K`)? Nothing has to be re-installed.** The
+   slot stride is unchanged (`0x3000`), slots 0–15 keep their exact addresses and the per-App
+   config layout is byte-identical, so installed Apps and their settings survive the update.
+   What does change: the capacity grows from 16 to **48 slots**, empty slots disappear from the
+   radio's App menu, and the RX/TX log moves from `0x1E0000` to `0x018000` — its old entries
+   are not migrated (the log starts fresh).
+2. **Coming from a stock / upstream 4 KiB firmware?** The slot stride is different
+   (`0x2000` → `0x3000`), so **every overlay App must be re-installed** after flashing.
+3. **8K-built Apps do NOT run on the stock 4K firmware**: their `.bss` overruns the stock
    4 KiB overlay workspace and they crash on start. Flash this firmware first, then install
    8K Apps (and vice versa: this firmware still runs old smaller Apps fine).
-3. The 0x073x UART protocol used by App-slot tools (UVStudio etc.) only reaches the external
+4. The 0x073x UART protocol used by App-slot tools (UVStudio etc.) only reaches the external
    SPI flash (config + App slots) — it **cannot update the firmware image itself**. Flash the
    `.bin` with your usual bootloader / flash-tool method.
-4. RAM is at 100 % (16384/16384 B); the stack guard is 704 B. Do not add features to this
-   fork without freeing RAM first (e.g. disable USB).
-5. The Apps menu lists the first 8 slots (`APP_MENU_SLOT_COUNT = 8`); using slots 9–16
-   requires a recompile.
+5. RAM is at 100 % (16384/16384 B); the real stack is 768 B. Do not add features to this fork
+   without freeing RAM first. The Labs API level 2 exposes `sys_stack_free_min()` so the
+   watermark can be read on-device.
+6. The Apps menu is upstream v6.2.0's installed-App launcher: it scans all 48 slots and hides
+   the empty ones.
 
 ## Building
 
@@ -54,10 +63,13 @@ below still apply; only constants changed). The release asset was built locally 
 `arm-none-eabi-gcc 13.3.rel1` + CMake/Ninja, no Docker:
 
 ```bash
-cmake -S . -B build -G Ninja -DCMAKE_TOOLCHAIN_FILE=cmake/gcc-arm-none-eabi.cmake \
-      <upstream Labs flags>          # version default is already v6.1.0+8K in this fork
-cmake --build build -j
+cmake --fresh --preset Labs
+cmake --build --preset Labs -j
 ```
+
+The Labs preset pins the displayed version to `v6.2.0+8K`. Note that **CMake/Ninja does not
+track the linker script**: after editing `Core/py32f071xb.ld`, touch any source file (or
+delete the ELF) or the link is skipped.
 
 ## Companion overlay Apps (built for this 8K firmware)
 
@@ -66,11 +78,12 @@ cmake --build build -j
 | [`busybin/F4HWN-CW-Morse-App`](https://github.com/busybin/F4HWN-CW-Morse-App) | CW (Morse) transceiver overlay app, 131-message history |
 | [`busybin/F4HWN-Encrypted-Messenger-App`](https://github.com/busybin/F4HWN-Encrypted-Messenger-App) | Encrypted messenger overlay app, 43-message history, Speck128 |
 
-Both Apps (and the official overlay apps) can be installed without downloading anything from
+Both Apps (and the 30 official overlay apps) can be installed without downloading anything from
 the one-page flasher,
 **[busybin.github.io/uvstudio-8k-flasher](https://busybin.github.io/uvstudio-8k-flasher/)**
 — a fork of armel's UV Studio whose catalogs read this repository's `archive/`; its firmware
-dropdown offers exactly this 8K build.
+dropdown offers exactly this 8K build and its Prosigns editor can rewrite the prosign table of
+an installed CW/SECMSG App in place.
 
 ---
 
