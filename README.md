@@ -1,15 +1,39 @@
-# 8K Overlay Fork — F4HWN v6.3.0+8K
+# F4HWN 8K firmware — v6.3.0 + 8 KiB overlay App window
 
-> **This repository is a fork of [armel/uv-k1-k5v3-firmware-custom](https://github.com/armel/uv-k1-k5v3-firmware-custom)**
-> at upstream tag [`v6.3.0`](https://github.com/armel/uv-k1-k5v3-firmware-custom/tree/ca3a4271)
-> (Apache-2.0 — © DualTachyon / Egzumer / Armel-F4HWN / muzkr, see [NOTICE](NOTICE)).
->
-> It exists for one purpose: **double the overlay App window from 4 KiB to 8 KiB**, so that larger
-> overlay Apps (an encrypted messenger with a 43-message history, a CW transceiver with a
-> 131-message history) run on the Quansheng UV-K1 / UV-K5 V3 (PY32F071).
+Fork of [armel/uv-k1-k5v3-firmware-custom](https://github.com/armel/uv-k1-k5v3-firmware-custom)
+(Apache-2.0 — © DualTachyon / Egzumer / Armel-F4HWN / muzkr, see [NOTICE](NOTICE)). One purpose:
+**double the overlay App window from 4 KiB to 8 KiB**, so larger overlay Apps run on the
+Quansheng UV-K1 / UV-K5 V3 (PY32F071) — the encrypted messenger with a 43-message history, the CW
+transceiver with 131 messages.
 
 ![F4HWN 8K firmware — main screen](screenshots/firmware-main.png)
 ![F4HWN APPS menu, opened with F+7](screenshots/firmware-apps.png)
+
+## Install — two steps, one page
+
+Firmware **and** Apps come from the same page. Nothing to download here.
+
+### 👉 https://busybin.github.io/uvstudio-8k-flasher/
+
+Desktop Chrome / Edge / Opera (Web Serial), radio plugged into that computer.
+
+1. **Flash the system** — *Flash Firmware* → **F4HWN Labs (8K fork) → v6.3.0+8K** → radio in
+   **DFU mode** → *Flash firmware*. Back up calibration (and your channels) first.
+2. **Flash the Apps** — *Apps* → *Application* → *Target slot* → *Install app*. Our **CW V18** and
+   **SECMSG V26** are starred **★**; the 40 official Apps are listed there too. The radio must be
+   in **normal mode**, with no overlay App running.
+
+Then on the radio: **Apps menu → the App**.
+
+> **Coming from stock 4 KiB firmware or our v6.1.0+8K?** The slot layout changed
+> (`0x2000` → `0x3000`), so **install every App again** after flashing.
+> **Coming from our v6.2.0+8K?** Slots and per-App settings stay. Only **SECMSG must be
+> reinstalled (V26)**, because `uid_get()` moved from offset 276 to 396; CW V17 keeps working but
+> loses the API-level-3 features.
+> **8K Apps do not run on 4 KiB firmware** — their `.bss` overruns the stock workspace. This
+> firmware still runs upstream Apps built for API level ≤ 3.
+> The UART App-slot protocol (UV Studio, `apptool.py`) reaches only the external flash; it
+> **cannot write the firmware image**. Use the DFU step above.
 
 ## What changed vs upstream v6.3.0
 
@@ -34,37 +58,23 @@ SHA256 `1a1c34b25cb8dd25657748a431498b922c786ffb8b8fed51defb1862bd4badcc`,
 on-radio version display **F4HWN v6.3.0+8K**, edition Labs.
 (The previous 8K builds, `archive/f4hwn.labs.8k.v6.1.0.bin` and `…v6.2.0.bin`, stay for rollback.)
 
-`archive/apps/v6.3.0/` holds the 40 official overlay apps plus our two (CW V18, SECMSG V26) and the
-rebuilt APRS RX / TX, i.e. 42 files; the flasher's catalog reads this directory.
+`archive/apps/v6.3.0/` holds the 40 official overlay Apps plus our two (CW V18, SECMSG V26) and the
+rebuilt APRS RX / TX, i.e. 42 files; the flasher's App catalog reads this directory.
 
-## ⚠️ Before you flash
+## Notes and limits
 
-1. **Coming from our previous 8K build (`v6.2.0+8K`)?** The slot stride and the per-App config
-   layout are unchanged, so installed Apps keep their addresses and settings. What does change:
-   **`uid_get` moved from offset 276 to 396**, so any App that calls it (our SECMSG) must be
-   re-installed. CW V17 keeps working (it never calls `uid_get`) but loses the level 3 features.
-2. **Coming from a stock / upstream 4 KiB firmware?** The slot stride is different
-   (`0x2000` → `0x3000`), so **every overlay App must be re-installed** after flashing.
-3. **App/firmware pairing**: Apps built for upstream API level 3 run here unchanged. Apps that
-   declare **API level 4** (CW V18, SECMSG V26) need this firmware; on stock firmware the loader
-   refuses them (`APP_ERR_ABI`) instead of crashing.
-4. **8K-built Apps do NOT run on the stock 4K firmware**: their `.bss` overruns the stock 4 KiB
-   overlay workspace and they crash on start. Flash this firmware first, then install 8K Apps.
-5. The 0x073x UART protocol used by App-slot tools (UVStudio etc.) only reaches the external
-   SPI flash (config + App slots) — it **cannot update the firmware image itself**. Flash the
-   `.bin` with your usual bootloader / flash-tool method.
-6. RAM is at 100 % (16384/16384 B); the real stack is **704 B**. The `.pre_anchor` gap that holds
-   the staging buffers is now exactly full (152/152 B), so the next upstream `.bss` growth needs a
-   new plan. Do not add features to this fork without freeing RAM first; `sys_stack_free_min()`
-   (level 2) reads the on-device watermark.
-7. The Apps menu is upstream v6.3.0's launcher: it scans all 48 slots, hides the empty ones and
-   reports an App it cannot launch instead of failing silently.
+- RAM is at 100 % (16384/16384 B); the real stack is **704 B**. The `.pre_anchor` gap holding the
+  staging buffers is exactly full (152/152 B), so the next upstream `.bss` growth needs a new plan.
+  `sys_stack_free_min()` (level 2) reads the on-device watermark.
+- The Apps menu is upstream v6.3.0's launcher: it scans all 48 slots, hides the empty ones and
+  reports an App it cannot launch instead of failing silently.
+- Official APRS RX / TX are rebuilt here; install them from the same Apps tab after flashing.
 
 ## Building
 
-Same flow as upstream — pick the **Labs** preset of this repository (upstream instructions
-below still apply; only constants changed). The release asset was built locally with
-`arm-none-eabi-gcc 13.3.rel1` + CMake/Ninja, no Docker:
+Same flow as upstream — pick the **Labs** preset (upstream instructions below still apply; only
+constants changed). The release asset was built locally with `arm-none-eabi-gcc 13.3.rel1` +
+CMake/Ninja, no Docker:
 
 ```bash
 cmake --fresh --preset Labs
@@ -72,22 +82,18 @@ cmake --build --preset Labs -j
 ```
 
 The Labs preset pins the displayed version to `v6.3.0+8K`. Note that **CMake/Ninja does not
-track the linker script**: after editing `Core/py32f071xb.ld`, touch any source file (or
-delete the ELF) or the link is skipped.
+track the linker script**: after editing `Core/py32f071xb.ld`, touch any source file (or delete
+the ELF) or the link is skipped.
 
 ## Companion overlay Apps (built for this 8K firmware)
 
 | Repository | App |
 | --- | --- |
-| [`busybin/F4HWN-CW-Morse-App`](https://github.com/busybin/F4HWN-CW-Morse-App) | CW (Morse) transceiver overlay app, 131-message history — **V18** |
-| [`busybin/F4HWN-Encrypted-Messenger-App`](https://github.com/busybin/F4HWN-Encrypted-Messenger-App) | Encrypted messenger overlay app, 43-message history, Speck128 — **V26** |
+| [`busybin/F4HWN-CW-Morse-App`](https://github.com/busybin/F4HWN-CW-Morse-App) | CW (Morse) transceiver, 131-message history — **V18** |
+| [`busybin/F4HWN-Encrypted-Messenger-App`](https://github.com/busybin/F4HWN-Encrypted-Messenger-App) | Encrypted messenger, 43-message history, Speck128 — **V26** |
 
-Both Apps (and the 40 official overlay apps) can be installed without downloading anything from
-the one-page flasher,
-**[busybin.github.io/uvstudio-8k-flasher](https://busybin.github.io/uvstudio-8k-flasher/)**
-— a fork of armel's UV Studio whose catalogs read this repository's `archive/`; its firmware
-dropdown offers exactly this 8K build and its Prosigns editor can rewrite the prosign table of
-an installed CW/SECMSG App in place.
+Both are installed from the flasher page above (starred ★), like the official Apps. The flasher's
+**Prosigns** tab can rewrite the prosign table of an installed CW / SECMSG App in place.
 
 ---
 
