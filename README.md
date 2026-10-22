@@ -17,7 +17,7 @@ Firmware **and** Apps come from the same page. Nothing to download here.
 
 Desktop Chrome / Edge / Opera (Web Serial), radio plugged into that computer.
 
-1. **Flash the system** — *Flash Firmware* → **F4HWN Labs (8K fork) → v6.3.0+8K** → radio in
+1. **Flash the system** — *Flash Firmware* → **F4HWN Labs (8K fork) → v6.3.0 · 115 KB** → radio in
    **DFU mode** → *Flash firmware*. Back up calibration (and your channels) first.
 2. **Flash the Apps** — *Apps* → *Application* → *Target slot* → *Install app*. Our **CW V18** and
    **SECMSG V26** are starred **★**; the 40 official Apps are listed there too. The radio must be
