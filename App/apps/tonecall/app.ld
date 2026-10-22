@@ -13,7 +13,7 @@
  * varies with the RAM layout, so pass it from the build: -Wl,--defsym,APP_VMA=0x...
  * The default is only a fallback for a standalone size check. */
 APP_VMA    = DEFINED(APP_VMA) ? APP_VMA : 0x20000280;
-APP_LENGTH = 0x1000;       /* 4 KiB sector-cache overlay                        */
+APP_LENGTH = 0x2000;       /* 8 KiB overlay, local 8K fork                       */
 
 ENTRY(app_main)
 

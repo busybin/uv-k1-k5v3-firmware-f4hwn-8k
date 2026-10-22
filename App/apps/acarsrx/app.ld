@@ -1,6 +1,6 @@
 /* ACARS RX runs in the same 4 KiB sector-cache overlay as APRS RX. */
 APP_VMA    = DEFINED(APP_VMA) ? APP_VMA : 0x20000280;
-APP_LENGTH = 0x1000;
+APP_LENGTH = 0x2000;
 ENTRY(app_main)
 MEMORY { APP (rwx) : ORIGIN = APP_VMA, LENGTH = APP_LENGTH }
 SECTIONS {
@@ -11,6 +11,6 @@ SECTIONS {
     } > APP
     __app_end = .;
     ASSERT(__app_end <= APP_VMA + APP_LENGTH,
-           "ACARS RX overlay exceeds 4 KiB")
+           "ACARS RX overlay exceeds 8 KiB")
     /DISCARD/ : { *(.ARM.exidx*) *(.ARM.extab*) *(.eh_frame*) *(.comment) *(.note.*) }
 }

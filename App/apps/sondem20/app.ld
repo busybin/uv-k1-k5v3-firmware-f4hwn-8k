@@ -1,6 +1,6 @@
 /* Overlay 4 KiB — VMA matches compile-app.sh / Core/py32f071xb.ld */
 APP_VMA    = DEFINED(APP_VMA) ? APP_VMA : 0x20000280;
-APP_LENGTH = 0x1000;
+APP_LENGTH = 0x2000;
 ENTRY(app_main)
 MEMORY { APP (rwx) : ORIGIN = APP_VMA, LENGTH = APP_LENGTH }
 SECTIONS {

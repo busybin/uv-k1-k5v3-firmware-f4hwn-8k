@@ -1,6 +1,6 @@
 /* APRS Edit overlay: code, read-only data and bss share the 4 KiB cache. */
 APP_VMA = DEFINED(APP_VMA) ? APP_VMA : 0x20000280;
-APP_LENGTH = 0x1000;
+APP_LENGTH = 0x2000;
 ENTRY(app_main)
 
 MEMORY { APP (rwx) : ORIGIN = APP_VMA, LENGTH = APP_LENGTH }

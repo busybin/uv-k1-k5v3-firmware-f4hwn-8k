@@ -63,7 +63,7 @@ _Min_Heap_Size = DEFINED(__min_heap_size) ? __min_heap_size : 0x200;      /* req
  * link, so it is set exactly at reality: if .bss grows past it the link fails
  * loudly instead of silently eating stack. Verify on-device with the API
  * level 2 sys_stack_free_min watermark after flashing. */
-_Min_Stack_Size = 0x300; /* required amount of stack */
+_Min_Stack_Size = 0x2C0; /* required amount of stack */
 
 /* Specify the memory areas */
 MEMORY
