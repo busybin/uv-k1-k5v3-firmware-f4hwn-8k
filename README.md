@@ -17,13 +17,23 @@ Firmware **and** Apps come from the same page. Nothing to download here.
 
 Desktop Chrome / Edge / Opera (Web Serial), radio plugged into that computer.
 
-1. **Flash the system** — *Flash Firmware* → **F4HWN Labs (8K fork) → v6.3.0 · 115 KB** → radio in
-   **DFU mode** → *Flash firmware*. Back up calibration (and your channels) first.
+1. **Flash the system** — either way works, same page:
+   - **A. DFU — replaces the firmware.** *Flash Firmware* → **F4HWN Labs (8K fork) → v6.3.0 · 115 KB** →
+     radio in **DFU mode** → *Flash firmware*. Back up calibration (and your channels) first.
+   - **B. Multiboot slot — keeps the current firmware.** *Firmware Slots* → same build → *Target slot* →
+     *Write to slot* (writes external flash only, the radio stays usable). Power off, hold **MENU**,
+     power on, select the slot and restore it. Needs a multiboot-enabled firmware already running
+     (F4HWN **v6+**), one slot holds at most 118 KiB, four user slots plus the automatic **Main**
+     backup.
 2. **Flash the Apps** — *Apps* → *Application* → *Target slot* → *Install app*. Our **CW V18** and
    **SECMSG V26** are starred **★**; the 40 official Apps are listed there too. The radio must be
    in **normal mode**, with no overlay App running.
 
 Then on the radio: **Apps menu → the App**.
+
+> **Multiboot and settings:** restoring a slot also selects its configuration bank — slot *N* uses
+> **`CFG N`**, your usual settings stay in **`CFG M`** (status bar shows the active bank; switch
+> back with the radio's **SetCfg** menu). Never power off while a slot is being restored.
 
 > **Coming from stock 4 KiB firmware or our v6.1.0+8K?** The slot layout changed
 > (`0x2000` → `0x3000`), so **install every App again** after flashing.
@@ -33,7 +43,8 @@ Then on the radio: **Apps menu → the App**.
 > **8K Apps do not run on 4 KiB firmware** — their `.bss` overruns the stock workspace. This
 > firmware still runs upstream Apps built for API level ≤ 3.
 > The UART App-slot protocol (UV Studio, `apptool.py`) reaches only the external flash; it
-> **cannot write the firmware image**. Use the DFU step above.
+> **cannot write the internal flash image**. Install the firmware with the DFU step, or through a
+> multiboot slot and the radio's boot selector.
 
 ## What changed vs upstream v6.3.0
 
