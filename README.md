@@ -1,5 +1,9 @@
 # 8K Overlay Fork — F4HWN v6.1.0+8K
 
+<p align="center">
+  <a href="https://buymeacoffee.com/busybin"><img src="https://cdn.buymeacoffee.com/buttons/v2/default-yellow.png" alt="Buy Me a Coffee" height="56"></a>
+</p>
+
 > **This repository is a fork of [armel/uv-k1-k5v3-firmware-custom](https://github.com/armel/uv-k1-k5v3-firmware-custom)**
 > at upstream tag [`v6.1.0`](https://github.com/armel/uv-k1-k5v3-firmware-custom/tree/f556a96)
 > (Apache-2.0 — © DualTachyon / Egzumer / Armel-F4HWN / muzkr, see [NOTICE](NOTICE)).
